@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selamat Ulang Tahun, Epann! ✨🎉</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Great+Vibes&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti & Tone.js for Audio Synth -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            100: '#FFF5C0',
+                            300: '#FFE17D',
+                            400: '#F5C842',
+                            500: '#D4AF37',
+                            600: '#AA820A',
+                            800: '#5B4300',
+                        },
+                        darkBg: '#090A0F',
+                        cardBg: 'rgba(20, 22, 34, 0.65)'
+                    },
+                    fontFamily: {
+                        cinzel: ['Cinzel', 'serif'],
+                        cursive: ['Great Vibes', 'cursive'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Custom Scrollbar & Utility Animations */
+        body {
+            background-color: #090A0F;
+            color: #E2E8F0;
+            overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            user-select: none;
+        }
+
+        /* Gold Gradient Text */
+        .gold-text-gradient {
+            background: linear-gradient(135deg, #FFF5C0 0%, #F5C842 40%, #AA820A 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Gold Shimmer Effect */
+        .gold-shimmer {
+            background: linear-gradient(90deg, #D4AF37 0%, #FFF5C0 50%, #D4AF37 100%);
+            background-size: 200% auto;
+            animation: shimmer 3s linear infinite;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes shimmer {
+            to { background-position: 200% center; }
+        }
+
+        /* Glowing Border Glassmorphism */
+        .glass-gold-card {
+            background: rgba(16, 19, 31, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(212, 175, 55, 0.1);
+        }
+
+        .glass-gold-card:hover {
+            border-color: rgba(212, 175, 55, 0.6);
+            box-shadow: 0 12px 40px 0 rgba(212, 175, 55, 0.25), inset 0 0 20px rgba(212, 175, 55, 0.15);
+        }
+
+        /* Envelope CSS Animation */
+        .envelope-wrapper {
+            perspective: 1000px;
+        }
+
+        .envelope {
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Click Sparkle Effect Elements */
+        .sparkle-particle {
+            position: absolute;
+            pointer-events: none;
+            animation: floatUpFade 1.2s ease-out forwards;
+        }
+
+        @keyframes floatUpFade {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.6) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -100px) scale(1.4) rotate(180deg);
+            }
+        }
+
+        /* Custom Pulse Animation */
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(212, 175, 55, 0.8); }
+        }
+
+        .glow-btn {
+            animation: pulseGlow 2.5s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen relative flex flex-col justify-between items-center text-slate-100">
+
+    <!-- Background Canvas for Particles -->
+    <canvas id="particleCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <!-- OVERLAY ENVELOPE (SAMPUL MEMBUKA) -->
+    <div id="envelopeOverlay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 transition-opacity duration-1000">
+        <div class="text-center max-w-md w-full">
+            <div class="mb-6 animate-bounce">
+                <span class="text-gold-400 font-cursive text-3xl sm:text-4xl">Ada Pesan Spesial...</span>
+            </div>
+            
+            <!-- Envelope Design -->
+            <div id="envelopeBox" onclick="openEnvelope()" class="envelope-wrapper cursor-pointer group mx-auto w-72 h-48 sm:w-80 sm:h-52 bg-slate-900 border-2 border-gold-500/50 rounded-xl relative shadow-2xl flex flex-col items-center justify-center hover:scale-105 transition-all duration-300">
+                <!-- Ribbon & Seal -->
+                <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-10 bg-gradient-to-r from-gold-600 via-gold-300 to-gold-600 opacity-80 shadow-md"></div>
+                <div class="absolute inset-y-0 left-1/2 -translate-x-1/2 w-10 bg-gradient-to-b from-gold-600 via-gold-300 to-gold-600 opacity-80 shadow-md"></div>
+                
+                <!-- Center Gold Wax Stamp -->
+                <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gold-300 via-gold-500 to-gold-800 rounded-full flex items-center justify-center shadow-lg z-10 border-2 border-gold-100 group-hover:rotate-12 transition-transform duration-300">
+                    <i class="fa-solid fa-crown text-2xl sm:text-3xl text-slate-950"></i>
+                </div>
+
+                <!-- Text Instruction -->
+                <p class="absolute bottom-3 text-xs sm:text-sm text-gold-300 font-medium tracking-wider uppercase">
+                    Klik Untuk Membuka <i class="fa-solid fa-sparkles ml-1"></i>
+                </p>
+            </div>
+
+            <p class="mt-8 text-xs text-slate-400 italic">
+                *Sentuh layar untuk pengalaman penuh dengan musik & kembang api
+            </p>
+        </div>
+    </div>
+
+    <!-- AUDIO PLAYER CONTROLLER -->
+    <div id="audioControl" class="fixed top-5 right-5 z-40 hidden flex items-center gap-2">
+        <button id="toggleAudioBtn" onclick="toggleAudio()" class="w-11 h-11 rounded-full glass-gold-card flex items-center justify-center text-gold-400 hover:text-gold-200 transition-all shadow-lg active:scale-95">
+            <i id="audioIcon" class="fa-solid fa-music text-lg"></i>
+        </button>
+    </div>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main id="mainContent" class="relative z-10 w-full max-w-4xl mx-auto px-4 py-12 flex flex-col items-center gap-10 opacity-0 transition-opacity duration-1000">
+
+        <!-- HEADER BANNER -->
+        <header class="text-center space-y-4">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gold-500/30 bg-gold-500/10 text-gold-300 text-xs sm:text-sm tracking-widest uppercase">
+                <i class="fa-solid fa-star text-gold-400"></i>
+                <span>Hari Spesial Sahabat</span>
+                <i class="fa-solid fa-star text-gold-400"></i>
+            </div>
+            
+            <h1 class="font-cinzel text-4xl sm:text-6xl md:text-7xl font-extrabold gold-text-gradient tracking-tight leading-tight">
+                Selamat Ulang Tahun, <br/>
+                <span class="font-cursive font-normal text-5xl sm:text-7xl md:text-8xl gold-shimmer block mt-1">Epann! 🎉</span>
+            </h1>
+
+            <p class="text-slate-300 text-base sm:text-lg max-w-xl mx-auto font-light leading-relaxed">
+                Hari ini adalah perayaan untuk sosok yang luar biasa. Semoga langkahmu selalu diterangi keberhasilan dan kebahagiaan!
+            </p>
+        </header>
+
+        <!-- AGE & SPECIAL COUNTER -->
+        <section class="w-full grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+            <div class="glass-gold-card p-6 rounded-2xl flex flex-col items-center justify-center transition-transform hover:-translate-y-1">
+                <i class="fa-solid fa-cake-candles text-3xl text-gold-400 mb-2"></i>
+                <span class="text-xs text-slate-400 uppercase tracking-widest font-semibold">Momen</span>
+                <span class="text-xl font-bold text-slate-100 mt-1">Ulang Tahun</span>
+            </div>
+            <div class="glass-gold-card p-6 rounded-2xl flex flex-col items-center justify-center transition-transform hover:-translate-y-1">
+                <i class="fa-solid fa-heart text-3xl text-gold-400 mb-2"></i>
+                <span class="text-xs text-slate-400 uppercase tracking-widest font-semibold">Status</span>
+                <span class="text-xl font-bold text-slate-100 mt-1">Sahabat Terbaik</span>
+            </div>
+            <div class="glass-gold-card p-6 rounded-2xl flex flex-col items-center justify-center transition-transform hover:-translate-y-1">
+                <i class="fa-solid fa-glass-cheers text-3xl text-gold-400 mb-2"></i>
+                <span class="text-xs text-slate-400 uppercase tracking-widest font-semibold">Harapan</span>
+                <span class="text-xl font-bold text-slate-100 mt-1">Sukses & Bahagia</span>
+            </div>
+        </section>
+
+        <!-- MAIN WISH LETTER CARD -->
+        <section class="w-full glass-gold-card rounded-3xl p-6 sm:p-10 relative overflow-hidden">
+            <!-- Decorative Corner Elements -->
+            <div class="absolute top-0 left-0 w-20 h-20 border-t-2 border-l-2 border-gold-500/40 rounded-tl-3xl pointer-events-none"></div>
+            <div class="absolute bottom-0 right-0 w-20 h-20 border-b-2 border-r-2 border-gold-500/40 rounded-br-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 space-y-6 text-slate-200 leading-relaxed text-base sm:text-lg">
+                <div class="flex items-center gap-3 border-b border-gold-500/20 pb-4">
+                    <div class="w-12 h-12 rounded-full bg-gold-500/20 flex items-center justify-center border border-gold-400/40 text-gold-300">
+                        <i class="fa-solid fa-envelope-open-text text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-cinzel text-xl sm:text-2xl font-bold text-gold-300">Surat Ucapan Tulus</h2>
+                        <p class="text-xs text-slate-400">Khusus ditujukan untuk Epann</p>
+                    </div>
+                </div>
+
+                <p>
+                    Halo <strong class="text-gold-300 font-semibold">Epann</strong>,
+                </p>
+                <p>
+                    Selamat menambah usia! Di hari bertambahnya umurmu ini, aku mendoakan segala yang terbaik untukmu. Semoga setiap impian, cita-cita, dan rencana besar yang sedang kamu perjuangkan bisa tercapai satu per satu dengan kelancaran.
+                </p>
+                <p>
+                    Terima kasih telah menjadi teman yang hebat, selalu membawa keceriaan, dan hadir dengan energi positif. Semoga kesehatan selalu bersamamu, kebahagiaan tak pernah melupakanmu, dan keberkahan mengiringi setiap langkahmu ke depan.
+                </p>
+                <p class="italic text-slate-300 bg-gold-500/5 p-4 rounded-xl border-l-4 border-gold-400">
+                    "Semoga tahun ini membawa petualangan baru yang lebih seru, pencapaian yang membanggakan, dan hari-hari yang penuh tawa."
+                </p>
+            </div>
+        </section>
+
+        <!-- INTERACTIVE WISH BOX / SURPRISE GENERATOR -->
+        <section class="w-full text-center space-y-6">
+            <h3 class="font-cinzel text-2xl sm:text-3xl font-bold text-gold-300">
+                <i class="fa-solid fa-gift mr-2 text-gold-400"></i> Wish Box & Quote Kejutan
+            </h3>
+            <p class="text-slate-400 text-sm max-w-md mx-auto">
+                Klik tombol di bawah untuk membuka ucapan & doa khusus untukmu!
+            </p>
+
+            <!-- Display Box -->
+            <div id="wishDisplay" class="glass-gold-card p-6 sm:p-8 rounded-2xl min-h-[140px] flex items-center justify-center transition-all duration-500">
+                <p id="wishText" class="font-cursive text-2xl sm:text-3xl text-gold-200">
+                    ✨ Klik tombol emas di bawah ini untuk mengambil hadiah ucapannya! ✨
+                </p>
+            </div>
+
+            <!-- Interactive Trigger Button -->
+            <button onclick="generateSurpriseWish()" class="glow-btn bg-gradient-to-r from-gold-600 via-gold-400 to-gold-600 hover:from-gold-500 hover:to-gold-400 text-slate-950 font-extrabold px-8 py-4 rounded-full shadow-xl transform active:scale-95 transition-all text-sm sm:text-base uppercase tracking-wider flex items-center justify-center gap-2 mx-auto">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Buka Pesan Kejutan</span>
+            </button>
+        </section>
+
+        <!-- EXTRA ACTION BUTTONS -->
+        <section class="flex flex-wrap justify-center gap-4 pt-4">
+            <button onclick="triggerFireworks()" class="glass-gold-card hover:bg-gold-500/20 text-gold-300 px-6 py-3 rounded-full text-sm font-semibold flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-fireworks text-gold-400"></i>
+                <span>Luncurkan Kembang Api</span>
+            </button>
+            <button onclick="shareWish()" class="glass-gold-card hover:bg-gold-500/20 text-gold-300 px-6 py-3 rounded-full text-sm font-semibold flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-share-nodes text-gold-400"></i>
+                <span>Bagikan Kebahagiaan</span>
+            </button>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="relative z-10 py-8 text-center text-xs text-slate-500 border-t border-slate-800/80 w-full mt-12">
+        <p>Dibuat khusus dengan penuh kehangatan untuk <span class="text-gold-400 font-semibold">Epann</span> ✨</p>
+        <p class="mt-1 opacity-70">Selamat Ulang Tahun & Sukses Selalu!</p>
+    </footer>
+
+    <script>
+        /* ===================================================
+           BACKGROUND PARTICLE CANVAS LOGIC
+        =================================================== */
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height + canvas.height;
+                this.size = Math.random() * 2.5 + 0.5;
+                this.speedY = Math.random() * 0.8 + 0.2;
+                this.speedX = (Math.random() - 0.5) * 0.4;
+                this.opacity = Math.random() * 0.7 + 0.3;
+                this.color = `rgba(212, 175, 55, ${this.opacity})`;
+            }
+
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                if (this.y < -10) {
+                    this.reset();
+                    this.y = canvas.height + 10;
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = Math.min(Math.floor(window.innerWidth / 12), 80);
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+
+        initParticles();
+        animateParticles();
+
+        /* ===================================================
+           AUDIO SYSTEM (Tone.js Synth Music Loop)
+        =================================================== */
+        let isPlayingAudio = false;
+        let polySynth = null;
+        let melodyLoop = null;
+
+        function initAudio() {
+            if (polySynth) return;
+            
+            // Create a soft, warm synth pad melody using Tone.js
+            polySynth = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: "sine" },
+                envelope: {
+                    attack: 0.8,
+                    decay: 1.5,
+                    sustain: 0.6,
+                    release: 2.0
+                }
+            }).toDestination();
+            
+            polySynth.volume.value = -12; // Comfortable background volume
+
+            // Smooth Happy Birthday-inspired chords & notes pattern
+            const notes = [
+                { time: "0:0", note: ["C4", "E4", "G4"], duration: "2n" },
+                { time: "0:2", note: ["G4", "B4", "D5"], duration: "2n" },
+                { time: "1:0", note: ["A3", "C4", "E4"], duration: "2n" },
+                { time: "1:2", note: ["F3", "A3", "C4"], duration: "2n" },
+                { time: "2:0", note: ["C4", "E4", "G4"], duration: "1m" }
+            ];
+
+            melodyLoop = new Tone.Part((time, value) => {
+                polySynth.triggerAttackRelease(value.note, value.duration, time);
+            }, notes);
+
+            melodyLoop.loop = true;
+            melodyLoop.loopEnd = "3:0";
+        }
+
+        async function toggleAudio() {
+            const icon = document.getElementById('audioIcon');
+            if (!isPlayingAudio) {
+                await Tone.start();
+                initAudio();
+                Tone.Transport.start();
+                melodyLoop.start(0);
+                isPlayingAudio = true;
+                icon.className = "fa-solid fa-volume-high text-lg text-gold-300";
+            } else {
+                Tone.Transport.stop();
+                isPlayingAudio = false;
+                icon.className = "fa-solid fa-volume-xmark text-lg text-slate-400";
+            }
+        }
+
+        /* ===================================================
+           ENVELOPE OPENING & FIREWORKS
+        =================================================== */
+        function openEnvelope() {
+            const overlay = document.getElementById('envelopeOverlay');
+            const mainContent = document.getElementById('mainContent');
+            const audioControl = document.getElementById('audioControl');
+
+            // Fade out overlay
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 1000);
+
+            // Show main content
+            mainContent.classList.remove('opacity-0');
+            audioControl.classList.remove('hidden');
+
+            // Trigger audio
+            toggleAudio().catch(() => console.log('Audio autoplay blocked until click interaction'));
+
+            // Launch Grand Fireworks
+            triggerFireworks();
+        }
+
+        function triggerFireworks() {
+            const duration = 3.5 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 80, zIndex: 100 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+
+                // Gold and Glitter colors
+                confetti(Object.assign({}, defaults, {
+                    particleCount,
+                    origin: { x: randomInRange(0.1, 0.4), y: Math.random() - 0.2 },
+                    colors: ['#D4AF37', '#FFF5C0', '#AA820A', '#FFFFFF']
+                }));
+                confetti(Object.assign({}, defaults, {
+                    particleCount,
+                    origin: { x: randomInRange(0.6, 0.9), y: Math.random() - 0.2 },
+                    colors: ['#D4AF37', '#FFF5C0', '#AA820A', '#FFFFFF']
+                }));
+            }, 250);
+        }
+
+        /* ===================================================
+           WISH BOX / SURPRISE GENERATOR
+        =================================================== */
+        const wishes = [
+            "✨ Semoga setiap cita-cita dan mimpi besarmu dimudahkan jalannya oleh Tuhan!",
+            "🌟 Umur baru, rezeki baru, dan cerita keberhasilan baru menunggu Epann di depan!",
+            "🥂 Semoga selalu dikelilingi oleh orang-orang baik yang tulus menyayangimu.",
+            "🚀 Makin sukses dalam karier, berkarya, dan segala petualangan hidupmu!",
+            "💎 Tetaplah jadi Epann yang rendah hati, hebat, dan membawa kebahagiaan buat sesama.",
+            "🌈 Semoga hari-harimu ke depan selalu dipenuhi dengan tawa dan kedamaian hati."
+        ];
+
+        let lastIndex = -1;
+
+        function generateSurpriseWish() {
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * wishes.length);
+            } while (randomIndex === lastIndex);
+
+            lastIndex = randomIndex;
+
+            const wishDisplay = document.getElementById('wishDisplay');
+            const wishText = document.getElementById('wishText');
+
+            // Smooth fade animation
+            wishDisplay.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                wishText.innerText = wishes[randomIndex];
+                wishDisplay.classList.remove('scale-95', 'opacity-0');
+            }, 300);
+
+            // Burst smaller confetti on button click
+            confetti({
+                particleCount: 40,
+                spread: 60,
+                origin: { y: 0.7 },
+                colors: ['#D4AF37', '#FFF5C0', '#FFE17D']
+            });
+        }
+
+        /* ===================================================
+           CLICK SPARKLE / FLOATING HEART EFFECT
+        =================================================== */
+        window.addEventListener('click', (e) => {
+            // Ignore click if clicking on buttons or envelope
+            if (e.target.closest('button') || e.target.closest('#envelopeBox')) return;
+
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle-particle text-gold-300 font-bold text-xl';
+            
+            const icons = ['✨', '⭐', '💛', '🎉', '🌟'];
+            sparkle.innerText = icons[Math.floor(Math.random() * icons.length)];
+            
+            sparkle.style.left = `${e.clientX}px`;
+            sparkle.style.top = `${e.clientY}px`;
+
+            document.body.appendChild(sparkle);
+
+            setTimeout(() => {
+                sparkle.remove();
+            }, 1200);
+        });
+
+        /* ===================================================
+           SHARE FUNCTION
+        =================================================== */
+        function shareWish() {
+            const textToCopy = "Selamat Ulang Tahun, Epann! 🎉✨ Semoga sehat, sukses, dan bahagia selalu!";
+            
+            // Temporary element for execCommand copy fallback
+            const tempInput = document.createElement('textarea');
+            tempInput.value = textToCopy;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+
+            // Show temporary Toast notification
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 glass-gold-card px-6 py-3 rounded-full text-gold-300 text-sm font-semibold z-50 shadow-2xl animate-bounce';
+            toast.innerText = '📋 Ucapan berhasil disalin ke clipboard!';
+            document.body.appendChild(toast);
+
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
